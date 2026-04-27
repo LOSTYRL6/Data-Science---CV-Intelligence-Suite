@@ -14,9 +14,11 @@ Aquí demuestro mi capacidad para manejar el ciclo completo del dato: desde la e
 ---
 
 ## 🎮 Proyecto 1: Recomendador de Videojuegos (Unsupervised ML)
-**Objetivo:** Motor de recomendación que sugiere 5 títulos similares basados en ADN de juego (géneros, categorías y tags).
+**Objetivo:** Motor de recomendación que sugiere 5 títulos similares basados en el "ADN" del juego.
 * **Algoritmos:** Clustering con **K-Means** y búsqueda de proximidad con **K-Nearest Neighbors (KNN)**.
-* **Feature Engineering:** Procesamiento de variables categóricas mediante One-Hot Encoding y reducción de 400+ dimensiones a 300 componentes principales con **PCA**.
+* **Pipeline de Datos:** Procesamiento de variables categóricas (One-Hot Encoding) y reducción de dimensionalidad con **PCA** (de 400+ a 300 componentes).
+* **Interfaz Avanzada:** * Renderizado automático de carátulas oficiales de Steam.
+    * Sistema de **Explainable AI**: Visualización de etiquetas comunes con paleta cromática dinámica de 30 colores para justificar la recomendación.
 * **Visualización:** Gráfico 3D interactivo en **Plotly** representando la segmentación de los clusters.
 
 ## 💻 Proyecto 2: Dashboard de Mercado de Hardware (BI & Analytics)
