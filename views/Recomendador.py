@@ -1,6 +1,6 @@
 import streamlit as st
 
-# 1. Recuperamos los datos y modelos de la sesión (cargados en el archivo principal)
+
 df_steam = st.session_state.get('df_steam')
 knn = st.session_state.get('knn')
 pipeline = st.session_state.get('pipeline')
