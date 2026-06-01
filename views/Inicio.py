@@ -128,7 +128,7 @@ with centro:
                 </div>
             """, unsafe_allow_html=True)
             if st.button("Acceder al Recomendador 🎮", key="btn_videojuegos", use_container_width=True):
-                st.switch_page("views/recomendador.py")
+                st.switch_page("views/recomendadorses.py")
 
         with col2:
             st.markdown("""
@@ -139,7 +139,7 @@ with centro:
                 </div>
             """, unsafe_allow_html=True)
             if st.button("Analizar Mercado 💻", key="btn_hardware", use_container_width=True):
-                st.switch_page("views/hardware.py")
+                st.switch_page("views/hardwars.py")
         with col3:
             st.markdown("""
                 <div class="card card-estudiantil" style="background-color: rgba(99, 110, 250, 0.15); 
@@ -149,7 +149,7 @@ with centro:
                 </div>
             """, unsafe_allow_html=True)
             if st.button("Predecir Éxito 🎓", key="btn_estudiante", use_container_width=True):
-                st.switch_page("views/estudiante.py")
+                st.switch_page("views/estudiantess.py")
 
     st.write("\n")
     st.info("💡 Usa el menú de la izquierda para explorar cada modelo de forma detallada.")
