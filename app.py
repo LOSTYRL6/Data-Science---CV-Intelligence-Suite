@@ -46,12 +46,12 @@ except Exception as e:
     st.error(f"⚠️ Error al cargar los modelos de Steam o Academia: {e}")
 pg = st.navigation({
     "Principal": [
-        st.Page("views/inicio.py", title="Inicio", icon="🏠", default=True),
+        st.Page("views/Inicio.py", title="Inicio", icon="🏠", default=True),
     ],
     "Proyectos": [
-        st.Page("views/recomendador.py", title="Recomendador de Juegos", icon="🎮"),
-        st.Page("views/hardware.py", title="Mercado Hardware", icon="💻"),
-        st.Page("views/estudiante.py", title="Predictor Estudiantil", icon="🎓"),
+        st.Page("views/Recomendador.py", title="Recomendador de Juegos", icon="🎮"),
+        st.Page("views/Hardware.py", title="Mercado Hardware", icon="💻"),
+        st.Page("views/Estudiante.py", title="Predictor Estudiantil", icon="🎓"),
     ]
 })
 pg.run()
