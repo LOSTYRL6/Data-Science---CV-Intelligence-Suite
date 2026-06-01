@@ -6,7 +6,6 @@ import plotly.express as px
 st.title("🎓 Panel de Gestión Académica")
 st.markdown("Registra a tus alumnos y utiliza la IA para predecir el rendimiento grupal con un enfoque preventivo.")
 
-# 1. Recuperar recursos del session_state (cargados en app.py)
 recursos = st.session_state.get('recursos_academia')
 if not recursos:
     st.error("⚠️ Error: No se pudo cargar el modelo. Asegúrate de que el archivo .pkl esté en la carpeta correcta.")
@@ -15,11 +14,9 @@ if not recursos:
 modelo = recursos['modelo']
 columnas_modelo = recursos['columnas']
 
-# 2. Inicializar la lista de clase si no existe
 if 'lista_clase' not in st.session_state:
     st.session_state.lista_clase = []
 
-# --- INTERFAZ ---
 col_form, col_lista = st.columns([1, 1.8])
 
 with col_form:
@@ -60,7 +57,7 @@ with col_form:
                     "health": salud
                 }
                 st.session_state.lista_clase.append(nuevo_alumno)
-                st.rerun() # Refrescamos para mostrar en la lista derecha inmediatamente
+                st.rerun() 
             else:
                 st.warning("Límite de 50 alumnos alcanzado.")
 
@@ -95,53 +92,41 @@ with col_lista:
             st.subheader("🚀 Resultados de la IA")
             
             resultados_finales = []
-            
-            # RECALCULAMOS LAS PREDICCIONES
+        
             for alumno in st.session_state.lista_clase:
                 registro_completo = {col: 0 for col in columnas_modelo}
-              # Ponemos valores por defecto optimistas para que no frenen el potencial del alumno
                 defaults = {
                     'age': 16, 
-                    'Medu': 4,        # Educación superior para los padres (máximo impacto positivo)
+                    'Medu': 4,      
                     'Fedu': 4, 
-                    'traveltime': 1,  # Tarda muy poco en llegar a clase (<15 min)
-                    'famsup': 1,      # SÍ tiene apoyo escolar familiar
-                    'internet': 1,    # SÍ tiene internet en casa (¡fundamental!)
-                    'higher': 1       # SÍ quiere hacer estudios superiores / Universidad
+                    'traveltime': 1, 
+                    'famsup': 1,   
+                    'internet': 1, 
+                    'higher': 1       
                 }
                 registro_completo.update(alumno) 
                 
                 df_input = pd.DataFrame([registro_completo])[columnas_modelo]
                 
-                # Definimos 'prob' aquí
                 prob = modelo.predict_proba(df_input)[0][1]
 
-                # --- REGLA DE SEGURIDAD CALIBRADA (PUNTO MEDIO REALISTA) ---
-                # 1. Penalización suave por suspensos previos: -10% por cada uno
                 if alumno["failures"] > 0:
                     prob = prob - (alumno["failures"] * 0.10)
 
-                # 2. Penalización por faltas: -0.4% por cada día (10 faltas sería un -4% en vez de -8%)
                 if alumno["absences"] > 0:
                     prob = prob - (alumno["absences"] * 0.004)
                     
-                # --- AJUSTE ADICIONAL POR ESTILO DE VIDA Y SALUD ---
-                # Si el consumo de alcohol es muy alto (4 o 5), restamos un 8% o 10% de probabilidad
                 if alumno["Walc"] >= 4:
                     prob = prob - 0.10
 
-                # Si la salud es muy mala (1 o 2), aplicamos un correctivo preventivo
                 if alumno["health"] <= 2:
                     prob = prob - 0.08
                 
                 if alumno["failures"] == 1 and alumno["absences"] == 0:
                      prob = prob + 0.05
 
-
-                # 3. Guardrail: Mantiene la probabilidad entre 0% y 100%
                 prob = max(0.0, min(1.0, prob))
 
-                # Definimos 'pred_final' aquí
                 pred_final = 1 if prob >= 0.5 else 0
                 
                 resultados_finales.append({
@@ -152,17 +137,14 @@ with col_lista:
             
             df_res = pd.DataFrame(resultados_finales)
 
-            # --- MÉTRICAS RESUMEN ---
             riesgo_total = len(df_res[df_res["Estado"] == "En Riesgo 🚨"])
             m1, m2 = st.columns(2)
             m1.metric("Total Alumnos", len(df_res))
             m2.metric("En Riesgo Académico", riesgo_total, delta=-riesgo_total, delta_color="inverse")
-            
-            # --- GRÁFICO CON SEABORN ---
+
             import seaborn as sns
             import matplotlib.pyplot as plt
 
-            # Forzamos el estilo oscuro de Matplotlib para que coincida con Streamlit
             plt.style.use('dark_background')
             fig, ax = plt.subplots(figsize=(10, 5))
             
@@ -172,22 +154,19 @@ with col_lista:
                 y="Confianza %", 
                 hue="Estado",
                 palette={"Aprobado ✅": "#2ecc71", "En Riesgo 🚨": "#e74c3c"},
-                errorbar="sd", # Muestra la desviación estándar (qué tanto varían los alumnos)
-                capsize=.1,    # Añade "bigotes" al errorbar
+                errorbar="sd",
+                capsize=.1,   
                 ax=ax
             )
 
-            # Línea de umbral crítico
             ax.axhline(50, color="white", linestyle="--", alpha=0.5)
             
-            # Configurar etiquetas
             ax.set_ylim(0, 105)
             ax.set_title("Promedio de Confianza Grupal (con Desviación)", fontsize=14, pad=20)
             ax.set_ylabel("Confianza Media %")
             
-            # Añadir etiquetas de valor encima de las barras
             for p in ax.patches:
-                if p.get_height() > 0: # Evitar etiquetas en barras vacías
+                if p.get_height() > 0:
                     ax.annotate(f'{p.get_height():.1f}%', 
                                 (p.get_x() + p.get_width() / 2., p.get_height()), 
                                 ha = 'center', va = 'center', 
@@ -201,19 +180,14 @@ with col_lista:
             st.info("Este mapa muestra cómo se relacionan las variables introducidas con la probabilidad de éxito calculada.")
             
             fig_heat, ax_heat = plt.subplots(figsize=(8, 4))
-            
-            # Calculamos la correlación entre las variables de entrada y el resultado
-            # Usamos df_res["Confianza %"] para ver qué influye más en la nota
             df_corr = pd.DataFrame(st.session_state.lista_clase)
             df_corr["Prob_Exito"] = df_res["Confianza %"]
-            
-            # Seleccionamos solo las numéricas para el heatmap
             corr_matrix = df_corr.select_dtypes(include=['number']).corr()
             
             sns.heatmap(
                 corr_matrix[['Prob_Exito']].sort_values(by='Prob_Exito', ascending=False),
                 annot=True, 
-                cmap='RdYlGn', # Rojo (Riesgo) a Verde (Éxito)
+                cmap='RdYlGn', 
                 fmt=".2f",
                 ax=ax_heat
             )
@@ -222,8 +196,6 @@ with col_lista:
             st.pyplot(fig_heat)
             
             st.dataframe(df_res, hide_index=True, use_container_width=True)
-            # --- BOTÓN DE DESCARGA ---
-            # Convertimos el DataFrame de resultados a CSV
             csv = df_res.to_csv(index=False).encode('utf-8')
             
             st.download_button(

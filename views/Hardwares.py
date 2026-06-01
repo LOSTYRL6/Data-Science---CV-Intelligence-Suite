@@ -5,10 +5,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="Hardware Intelligence", layout="wide")
 
-# --- ESTILO CSS ---
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
@@ -32,7 +30,7 @@ URL_EXCHANGE = f"https://openexchangerates.org/api/latest.json?app_id={API_KEY}"
 @st.cache_data(ttl=3600)
 def get_exchange_rate():
     if not API_KEY:
-        return 0.92  # Fallback directo si no hay API Key activa
+        return 0.92  
     try:
         response = requests.get(URL_EXCHANGE)
         return response.json()['rates']['EUR']
@@ -62,7 +60,6 @@ def get_inflation_data():
     except:
         return pd.DataFrame()
 
-# 3. DATOS HISTÓRICOS
 def get_real_history_data():
     return {
         "PS5 Standard": {
@@ -104,8 +101,6 @@ def get_real_history_data():
 def process_data(tasa_eur):
     hitos = get_real_history_data()
     filas = []
-    
-    # Mapa inteligente de marcas
     marca_map = {
         "PS5": "Sony", "Portal": "Sony", "Xbox": "Microsoft", 
         "Nintendo": "Nintendo", "Switch": "Nintendo",
@@ -114,8 +109,7 @@ def process_data(tasa_eur):
 
     for consola, historial in hitos.items():
         p_lanzamiento = list(historial.values())[0]
-        
-        # Detectar marca
+
         marca_detectada = "Otros"
         for keyword, name in marca_map.items():
             if keyword in consola:
@@ -142,7 +136,6 @@ def process_data(tasa_eur):
     
     return pd.concat(df_list)
 
-# --- LÓGICA DE EJECUCIÓN ---
 tasa_eur = get_exchange_rate()
 df_final = process_data(tasa_eur)
 df_inf = get_inflation_data()
@@ -181,7 +174,6 @@ df_filtrado = df_final[df_final['Consola'].isin(consolas_selec)]
 if not df_filtrado.empty:
     ultimos_precios = df_filtrado.sort_values('Fecha').groupby('Consola').last()
     
-    # --- KPIs DINÁMICOS (Ahora con 4 columnas) ---
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.metric("PRECIO PROMEDIO ACTUAL", f"{ultimos_precios['Precio_EUR'].mean():.2f} €")
@@ -206,10 +198,9 @@ if not df_filtrado.empty:
         color='Consola',
         template="plotly_dark",
         markers=True,
-        color_discrete_map=colores_consolas  # <--- Más limpio y reutilizable
+        color_discrete_map=colores_consolas
     )
 
-    # --- AÑADIR SELECTOR DE PERIODOS DE TIEMPO ---
     fig_line.update_xaxes(
         rangeselector=dict(
             buttons=list([
@@ -219,13 +210,11 @@ if not df_filtrado.empty:
                 dict(count=1, label="1y", step="year", stepmode="backward"),
                 dict(step="all", label="Todo")
             ]),
-            bgcolor="#1f2c3a", # Color de fondo de los botones para que combine con el modo oscuro
-            activecolor="#00aaff", # Color cuando el botón está seleccionado
+            bgcolor="#1f2c3a", 
+            activecolor="#00aaff", 
             font=dict(color="white")
         )
     )
-
-    # Añadimos también el Range Slider abajo para poder desplazarse manualmente
     fig_line.update_layout(
         hovermode="x unified", 
         yaxis_title="Precio en Euros (€)",
@@ -233,8 +222,6 @@ if not df_filtrado.empty:
     )
 
     st.plotly_chart(fig_line, use_container_width=True)
-
-    # --- GRÁFICA DE BARRAS ACTUAL ---
     st.subheader("📊 Comparativa de Mercado Actual")
     fig_bar = px.bar(
         ultimos_precios.reset_index(),
@@ -248,12 +235,10 @@ if not df_filtrado.empty:
     st.plotly_chart(fig_bar, use_container_width=True)
     
     
-# --- SECCIÓN: PRECIO VS INFLACIÓN (ESTILO CLAUDE) ---
     st.write("---")
     st.subheader("⚖️ Análisis de Poder Adquisitivo: Precio vs Inflación")
     
     if not df_inf.empty:
-        # Creamos subplots: Fila 1 para Consolas, Fila 2 para Inflación
         fig_indices = make_subplots(
             rows=2, cols=1, 
             shared_xaxes=True, 
@@ -262,11 +247,9 @@ if not df_filtrado.empty:
             subplot_titles=("Índice de Precio Normalizado (100 = Lanzamiento)", "CPI Inflación Acumulada (USA)")
         )
 
-        # 1. Añadimos las líneas de cada consola al primer gráfico
         for consola in df_filtrado['Consola'].unique():
             df_c = df_filtrado[df_filtrado['Consola'] == consola]
             
-            # Buscamos el color de la consola actual en nuestro diccionario
             color_actual = colores_consolas.get(consola, '#ffffff') 
             
             fig_indices.add_trace(
@@ -277,16 +260,13 @@ if not df_filtrado.empty:
                     mode='lines+markers',
                     line=dict(
                         width=2,
-                        color=color_actual  # <--- Aquí aplicamos el color
+                        color=color_actual 
                     ),
                 ),
                 row=1, col=1
             )
 
-        # Línea de referencia base 100
         fig_indices.add_hline(y=100, line_dash="dash", line_color="gray", row=1, col=1)
-
-        # 2. Añadimos la inflación como área rellena (naranja) al segundo gráfico
         fig_indices.add_trace(
             go.Scatter(
                 x=df_inf['Fecha'], 
@@ -299,7 +279,6 @@ if not df_filtrado.empty:
             row=2, col=1
         )
 
-        # Configuración de diseño
         fig_indices.update_layout(
             height=600,
             template="plotly_dark",
@@ -308,21 +287,18 @@ if not df_filtrado.empty:
             margin=dict(l=20, r=20, t=40, b=20)
         )
         
-        # Ajustes de los ejes Y
         fig_indices.update_yaxes(title_text="Índice (100)", row=1, col=1)
         fig_indices.update_yaxes(title_text="% Inflación", row=2, col=1)
 
         st.plotly_chart(fig_indices, use_container_width=True)
         
         
-# --- NUEVA SECCIÓN: INTELIGENCIA POR MARCA ---
     st.write("---")
     st.subheader("🏢 Business Intelligence: Análisis por Compañía")
     
     col_left, col_right = st.columns(2)
     
     with col_left:
-        # 1. Distribución de Valor por Marca (Pie Chart)
         st.markdown("##### Cuota de Valor en Selección")
         fig_pie = px.pie(
             ultimos_precios.reset_index(), 
@@ -337,7 +313,6 @@ if not df_filtrado.empty:
         st.plotly_chart(fig_pie, use_container_width=True)
 
     with col_right:
-        # 2. Precio Promedio por Marca (Bar Chart Horizontal)
         st.markdown("##### Precio Promedio por Fabricante")
         avg_brand_price = ultimos_precios.groupby('Marca')['Precio_EUR'].mean().reset_index().sort_values('Precio_EUR', ascending=False)
         

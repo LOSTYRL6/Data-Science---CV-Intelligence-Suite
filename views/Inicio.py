@@ -1,20 +1,16 @@
 import streamlit as st
 import base64
 
-# Configuración de página (asegúrate de que sea la primera línea de Streamlit)
 st.set_page_config(page_title="Data Science Suite", layout="wide")
 
 def get_base64(file):
     with open(file, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-# Intentar cargar la imagen de fondo
 try:
     img = get_base64("Image/fondo3.gif")
 except:
-    img = "" # Fallback si no encuentra la imagen
-
-# --- BLOQUE DE ESTILO CSS PREMIUM ---
+    img = "" 
 st.markdown(f"""
     <style>
     /* 1. Fondo con degradado y GIF */
@@ -98,7 +94,6 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# --- CONTENIDO DE LA PÁGINA ---
 
 izq, centro, der = st.columns([1, 8, 1])
 
@@ -106,27 +101,24 @@ with centro:
     # Título con degradado moderno
     st.markdown("""
         <h1 style='text-align: center; 
-                   background: linear-gradient(90deg, #FF4B4B, #636EFA);
-                   -webkit-background-clip: text;
-                   -webkit-text-fill-color: transparent;
-                   font-size: 3.5rem;
-                   font-weight: 800;
-                   margin-bottom: 0px;'>
+                    background: linear-gradient(90deg, #FF4B4B, #636EFA);
+                    -webkit-background-clip: text;
+                    -webkit-background-color: transparent;
+                    -webkit-text-fill-color: transparent;
+                    font-size: 3.5rem;
+                    font-weight: 800;
+                    margin-bottom: 0px;'>
             Suite de Data Science
         </h1>
         <p style='text-align: center; color: #808495; font-size: 1.2rem; margin-bottom: 40px;'>
             Explora modelos inteligentes de recomendación y predicción técnica
         </p>
     """, unsafe_allow_html=True)
-
-    # Contenedor de proyectos
     with st.container(border=True):
         st.markdown("<h2 style='text-align: center; color: white;'>🎮 Mis Proyectos Principales</h2>", unsafe_allow_html=True)
         st.write("\n")
 
         col1, col2, col3 = st.columns(3)
-
-        # --- PROYECTO 1: VIDEOJUEGOS ---
         with col1:
             st.markdown("""
                 <div class="card card-videojuegos" style="background-color: rgba(255, 75, 75, 0.15); 
@@ -138,7 +130,6 @@ with centro:
             if st.button("Acceder al Recomendador 🎮", key="btn_videojuegos", use_container_width=True):
                 st.switch_page("views/recomendador.py")
 
-        # --- PROYECTO 2: HARDWARE ---
         with col2:
             st.markdown("""
                 <div class="card card-hardware" style="background-color: rgba(0, 204, 150, 0.15); 
@@ -149,8 +140,6 @@ with centro:
             """, unsafe_allow_html=True)
             if st.button("Analizar Mercado 💻", key="btn_hardware", use_container_width=True):
                 st.switch_page("views/hardware.py")
-
-        # --- PROYECTO 3: ESTUDIANTIL ---
         with col3:
             st.markdown("""
                 <div class="card card-estudiantil" style="background-color: rgba(99, 110, 250, 0.15); 
