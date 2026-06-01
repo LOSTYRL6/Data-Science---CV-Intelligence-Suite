@@ -54,9 +54,4 @@ pg = st.navigation({
         st.Page("views/estudiante.py", title="Predictor Estudiantil", icon="🎓"),
     ]
 })
-
-# 4. SIDEBAR COMÚN
-st.sidebar.info("Grandmaster Dev: Tu Nombre/GitHub")
-
-# Ejecución
 pg.run()

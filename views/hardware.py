@@ -21,9 +21,23 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. CONEXIÓN APIS
-API_KEY = "6d32ce1a594a45779b6e71741a42ceb9" 
+try:
+    API_KEY = st.secrets["API_KEY"]
+except KeyError:
+    st.error("🔑 Error de Configuración: No se encontró la API_KEY en los secretos del sistema.")
+    API_KEY = None
+
 URL_EXCHANGE = f"https://openexchangerates.org/api/latest.json?app_id={API_KEY}"
+
+@st.cache_data(ttl=3600)
+def get_exchange_rate():
+    if not API_KEY:
+        return 0.92  # Fallback directo si no hay API Key activa
+    try:
+        response = requests.get(URL_EXCHANGE)
+        return response.json()['rates']['EUR']
+    except:
+        return 0.92
 
 @st.cache_data(ttl=3600)
 def get_exchange_rate():

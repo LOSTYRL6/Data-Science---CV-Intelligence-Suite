@@ -1,0 +1,12 @@
+# --- NUESTROS SECRETOS (¡LO MÁS IMPORTANTE!) ---
+.streamlit/secrets.toml
+.env
+
+# --- ARCHIVOS DE PYCACHE (BASURA DE PYTHON) ---
+__pycache__/
+*.pyc
+
+# --- ENTORNOS VIRTUALES (SI TIENES UNO) ---
+venv/
+.venv/
+env/
