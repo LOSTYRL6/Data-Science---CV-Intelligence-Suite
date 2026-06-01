@@ -64,6 +64,8 @@ with col_form:
             else:
                 st.warning("Límite de 50 alumnos alcanzado.")
 
+
+
 with col_lista:
     st.subheader(f"📋 Alumnos Registrados ({len(st.session_state.lista_clase)}/50)")
     
@@ -71,7 +73,7 @@ with col_lista:
         for i, alumno in enumerate(st.session_state.lista_clase):
             col_n, col_x = st.columns([4, 1])
             with col_n:
-                st.write(f"👤 **{alumno['Nombre']}** | Faltas: {alumno['absences']} | Suspensos: {alumno['failures']} | Estudios: {alumno['studytime']}  | Sali: {alumno['goout']} | Salud: {alumno['health']} ")
+                st.write(f"👤 **{alumno['Nombre']}** | Faltas: {alumno['absences']} | Suspensos: {alumno['failures']} | Estudios: {alumno['studytime']}  | Sali: {alumno['goout']}| Alcohol: {alumno['Walc']} | Salud: {alumno['health']} ")
             with col_x:
                 if st.button("❌", key=f"del_{i}", help=f"Eliminar a {alumno['Nombre']}"):
                     st.session_state.lista_clase.pop(i)
@@ -97,8 +99,16 @@ with col_lista:
             # RECALCULAMOS LAS PREDICCIONES
             for alumno in st.session_state.lista_clase:
                 registro_completo = {col: 0 for col in columnas_modelo}
-                defaults = {'age': 18, 'Medu': 2, 'Fedu': 2, 'traveltime': 2, 'famsup': 0, 'internet': 0, 'higher': 0}
-                registro_completo.update(defaults)
+              # Ponemos valores por defecto optimistas para que no frenen el potencial del alumno
+                defaults = {
+                    'age': 16, 
+                    'Medu': 4,        # Educación superior para los padres (máximo impacto positivo)
+                    'Fedu': 4, 
+                    'traveltime': 1,  # Tarda muy poco en llegar a clase (<15 min)
+                    'famsup': 1,      # SÍ tiene apoyo escolar familiar
+                    'internet': 1,    # SÍ tiene internet en casa (¡fundamental!)
+                    'higher': 1       # SÍ quiere hacer estudios superiores / Universidad
+                }
                 registro_completo.update(alumno) 
                 
                 df_input = pd.DataFrame([registro_completo])[columnas_modelo]
@@ -106,9 +116,30 @@ with col_lista:
                 # Definimos 'prob' aquí
                 prob = modelo.predict_proba(df_input)[0][1]
 
-                # Regla de seguridad (Mano dura)
-                if alumno["absences"] > 30 or alumno["failures"] >= 2:
-                    prob = prob * 0.5  
+                # --- REGLA DE SEGURIDAD CALIBRADA (PUNTO MEDIO REALISTA) ---
+                # 1. Penalización suave por suspensos previos: -10% por cada uno
+                if alumno["failures"] > 0:
+                    prob = prob - (alumno["failures"] * 0.10)
+
+                # 2. Penalización por faltas: -0.4% por cada día (10 faltas sería un -4% en vez de -8%)
+                if alumno["absences"] > 0:
+                    prob = prob - (alumno["absences"] * 0.004)
+                    
+                # --- AJUSTE ADICIONAL POR ESTILO DE VIDA Y SALUD ---
+                # Si el consumo de alcohol es muy alto (4 o 5), restamos un 8% o 10% de probabilidad
+                if alumno["Walc"] >= 4:
+                    prob = prob - 0.10
+
+                # Si la salud es muy mala (1 o 2), aplicamos un correctivo preventivo
+                if alumno["health"] <= 2:
+                    prob = prob - 0.08
+                
+                if alumno["failures"] == 1 and alumno["absences"] == 0:
+                     prob = prob + 0.05
+
+
+                # 3. Guardrail: Mantiene la probabilidad entre 0% y 100%
+                prob = max(0.0, min(1.0, prob))
 
                 # Definimos 'pred_final' aquí
                 pred_final = 1 if prob >= 0.5 else 0
@@ -202,5 +233,6 @@ with col_lista:
                 mime='text/csv',
                 help="Haz clic para descargar un archivo compatible con Excel con los resultados del análisis."
             )
+        st.caption("⚠️ *Nota: Las predicciones son estimaciones estadísticas basadas en datos históricos y reglas institucionales. Deben usarse como una guía orientativa, no como un veredicto definitivo.*")
     else:
         st.info("La lista está vacía. Registra alumnos a la izquierda para analizar el aula.")

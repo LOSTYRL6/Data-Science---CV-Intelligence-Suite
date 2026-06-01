@@ -133,6 +133,29 @@ tasa_eur = get_exchange_rate()
 df_final = process_data(tasa_eur)
 df_inf = get_inflation_data()
 
+colores_consolas = {
+    'PS5 Standard': '#003087', 
+    'PS5 Slim': '#00aaff',
+    'PS5 Pro': '#0055ff',       
+    'PlayStation Portal': '#4a7aff',
+    'Xbox Series X': '#107c10', 
+    'Xbox Series S': '#2ca02c',
+    'Nintendo Switch OLED': '#e60012',
+    'Steam Deck (512GB)': '#1a9fff',
+    'ASUS ROG Ally (Z1 Extreme)': '#ff0055' 
+}
+
+colores_marcas = {
+    'Sony': '#003087', 
+    'Microsoft': '#107c10', 
+    'Nintendo': '#e60012', 
+    'NVIDIA': '#76b900', 
+    'AMD': '#900000', 
+    'Valve': '#1a9fff', 
+    'ASUS': '#ff0033'
+}
+
+
 st.title("🛡️ Hardware Intelligence Dashboard")
 st.info(f"Divisa: **1 USD = {tasa_eur:.4f} EUR** | Inflación FRED: **Conectada**")
 
@@ -169,11 +192,7 @@ if not df_filtrado.empty:
         color='Consola',
         template="plotly_dark",
         markers=True,
-        color_discrete_map={
-            'PS5 Standard': '#003087', 'PS5 Slim': '#00aaff',
-            'Xbox Series X': '#107c10', 'Xbox Series S': '#2ca02c',
-            'Nintendo Switch OLED': '#e60012'
-        }
+        color_discrete_map=colores_consolas  # <--- Más limpio y reutilizable
     )
 
     # --- AÑADIR SELECTOR DE PERIODOS DE TIEMPO ---
@@ -210,7 +229,7 @@ if not df_filtrado.empty:
         color='Marca',
         text_auto='.2f',
         template="plotly_dark",
-        color_discrete_map={'Sony': '#003087', 'Microsoft': '#107c10', 'Nintendo': '#e60012'}
+        color_discrete_map={'Sony': '#003087', 'Microsoft': '#107c10', 'Nintendo': '#e60012', 'NVIDIA': '#76b900', 'AMD': '#900000', 'Valve': '#1a9fff', 'ASUS': '#ff0033'}
     )
     st.plotly_chart(fig_bar, use_container_width=True)
     
@@ -232,13 +251,20 @@ if not df_filtrado.empty:
         # 1. Añadimos las líneas de cada consola al primer gráfico
         for consola in df_filtrado['Consola'].unique():
             df_c = df_filtrado[df_filtrado['Consola'] == consola]
+            
+            # Buscamos el color de la consola actual en nuestro diccionario
+            color_actual = colores_consolas.get(consola, '#ffffff') 
+            
             fig_indices.add_trace(
                 go.Scatter(
                     x=df_c['Fecha'], 
                     y=df_c['Indice_100'], 
                     name=consola,
                     mode='lines+markers',
-                    line=dict(width=2)
+                    line=dict(
+                        width=2,
+                        color=color_actual  # <--- Aquí aplicamos el color
+                    ),
                 ),
                 row=1, col=1
             )
@@ -291,8 +317,7 @@ if not df_filtrado.empty:
             hole=0.4,
             template="plotly_dark",
             color='Marca',
-            color_discrete_map={'Sony': '#003087', 'Microsoft': '#107c10', 'Nintendo': '#e60012', 
-                                'NVIDIA': '#76b900', 'AMD': '#900000', 'Valve': '#1a9fff', 'ASUS': '#ff0033'}
+            color_discrete_map=colores_marcas
         )
         fig_pie.update_traces(textinfo='percent+label')
         st.plotly_chart(fig_pie, use_container_width=True)
@@ -310,8 +335,7 @@ if not df_filtrado.empty:
             template="plotly_dark",
             text_auto='.2f',
             color='Marca',
-            color_discrete_map={'Sony': '#003087', 'Microsoft': '#107c10', 'Nintendo': '#e60012', 
-                                'NVIDIA': '#76b900', 'AMD': '#900000', 'Valve': '#1a9fff', 'ASUS': '#ff0033'}
+            color_discrete_map=colores_marcas
         )
         fig_brand_bar.update_layout(showlegend=False, xaxis_title="Euros (€)")
         st.plotly_chart(fig_brand_bar, use_container_width=True)
