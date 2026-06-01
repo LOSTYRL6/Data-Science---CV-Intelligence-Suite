@@ -128,7 +128,7 @@ with centro:
                 </div>
             """, unsafe_allow_html=True)
             if st.button("Acceder al Recomendador 🎮", key="btn_videojuegos", use_container_width=True):
-                st.switch_page("views/recomendadorses.py")
+                st.switch_page("views/recomendadores.py")
 
         with col2:
             st.markdown("""
