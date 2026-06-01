@@ -50,8 +50,8 @@ pg = st.navigation({
     ],
     "Proyectos": [
         st.Page("views/Recomendador.py", title="Recomendador de Juegos", icon="🎮"),
-        st.Page("views/Hardware.py", title="Mercado Hardware", icon="💻"),
-        st.Page("views/Estudiante.py", title="Predictor Estudiantil", icon="🎓"),
+        st.Page("views/Hardwares.py", title="Mercado Hardware", icon="💻"),
+        st.Page("views/Estudiantes.py", title="Predictor Estudiantil", icon="🎓"),
     ]
 })
 pg.run()
