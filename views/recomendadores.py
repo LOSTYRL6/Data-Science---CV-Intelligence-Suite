@@ -56,7 +56,10 @@ if df_steam is not None:
         if st.button("✨ ¡Recomiéndame!"):
             # Transformación de datos
             datos_crudos = df_steam.loc[[busqueda]].drop(columns=['cluster'], errors='ignore')
-            datos_scaled = pipeline.named_steps['standardscaler'].transform(datos_crudos)
+            
+            # SOLUCIÓN: Convertimos a una matriz de NumPy (.values) 
+            # Así eliminamos los nombres de golpe y ninguna librería se queja
+            datos_scaled = pipeline.named_steps['standardscaler'].transform(datos_crudos.values)
             datos_transformados = pipeline.named_steps['pca'].transform(datos_scaled)
             
             # KNN
